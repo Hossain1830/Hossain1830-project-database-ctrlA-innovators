@@ -3,9 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Signup and Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h3>ok</h3>
+
+    <div class="form-container">
+        <h2>Signup or Login</h2>
+
+        <!-- Signup Form -->
+        <div id="signupForm">
+            <form action="/signup" method="POST">
+                <input type="text" name="name" placeholder="Full Name" required><br>
+                <input type="email" name="email" placeholder="Email" required><br>
+                <input type="password" name="password" placeholder="Password" required><br>
+                <input type="password" name="confirmPassword" placeholder="Confirm Password" required><br>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" style="display: none;">
+            <form action="/login" method="POST">
+                <input type="email" name="email" placeholder="Email" required><br>
+                <input type="password" name="password" placeholder="Password" required><br>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+
+        <!-- Toggle between Signup and Login -->
+        <div class="toggle-link">
+            <p id="toggleText">Already have an account? <a href="javascript:void(0)" onclick="toggleForms()">Login here</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Function to toggle between signup and login forms
+        function toggleForms() {
+            const signupForm = document.getElementById('signupForm');
+            const loginForm = document.getElementById('loginForm');
+            const toggleText = document.getElementById('toggleText');
+            
+            if (signupForm.style.display === 'none') {
+                signupForm.style.display = 'block';
+                loginForm.style.display = 'none';
+                toggleText.innerHTML = 'Already have an account? <a href="javascript:void(0)" onclick="toggleForms()">Login here</a>';
+            } else {
+                signupForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                toggleText.innerHTML = 'Don\'t have an account? <a href="javascript:void(0)" onclick="toggleForms()">Sign up here</a>';
+            }
+        }
+    </script>
+
 </body>
 </html>
