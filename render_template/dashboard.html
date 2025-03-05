@@ -1,0 +1,14 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ current_user.username }}</h1>
+    <a href=logout.html>Logout</a>
+    {% if current_user.role == 'Admin' %}
+        <a href=admin.html>Admin Panel</a>
+    {% endif %}
+</body>
+</html>
