@@ -1,0 +1,22 @@
+<h2>Welcome to the Chatbox</h2>
+<p>Start chatting...</p>
+
+<div id="chatbox" style="width: 400px; height: 300px; border: 1px solid #000; overflow-y: scroll;">
+    <div id="messages"></div>
+</div>
+
+<input type="text" id="messageInput" placeholder="Type a message..." style="width: 300px;">
+<button onclick="sendMessage()">Send</button>
+
+<script>
+    function sendMessage() {
+        let messageInput = document.getElementById('messageInput');
+        let messages = document.getElementById('messages');
+        
+        let newMessage = document.createElement('div');
+        newMessage.textContent = messageInput.value;
+        messages.appendChild(newMessage);
+        
+        messageInput.value = ''; // Clear input field
+    }
+</script>

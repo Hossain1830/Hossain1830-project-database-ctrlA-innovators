@@ -41,9 +41,15 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Switch to the non-privileged user to run the application.
 USER appuser
 
+
+
 # Copy the source code into the container.
 COPY . .
 
+#RUN apt install python 
+#RUN pip install --upgrade setuptools
+
+RUN pip install -r requirements.txt 
 # Expose the port that the application listens on.
 EXPOSE 8000
 
