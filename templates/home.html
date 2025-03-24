@@ -1,17 +1,83 @@
-<!-- home.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <a href="style.css"></a>
     <title>Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://huggingface.co/favicon.ico') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        header {
+            padding: 40px 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            width: 80%;
+            max-width: 600px;
+        }
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        nav {
+            margin-top: 20px;
+        }
+        nav a {
+            font-size: 1.2rem;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #0056b3;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        nav a:hover {
+            background-color: #004494;
+        }
+        .content {
+            width: 80%;
+            max-width: 600px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .content h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .content p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Home Page</h1>
-    <nav>
-        <a href="{{ url_for('login') }}">Login</a>
-        <a href="{{ url_for('signup') }}">Sign Up</a>
-    </nav>
+
+    <header>
+        <h1>Welcome to the AI Chatbot</h1>
+    </header>
+
+    <div class="content">
+        <h2>About Hugging Face</h2>
+        <p>Hugging Face is an AI company that specializes in Natural Language Processing (NLP). It provides open-source models, APIs, and tools to create advanced conversational systems and other AI-driven applications.</p>
+        <nav>
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}">Sign Up</a>
+        </nav>
+    </div>
+
 </body>
 </html>
