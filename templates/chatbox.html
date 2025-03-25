@@ -43,10 +43,18 @@
             list-style-type: none;
             padding: 0;
         }
-        #messages div {
+        .message {
             padding: 8px;
             border-bottom: 1px solid #ddd;
             margin-bottom: 5px;
+        }
+        .user {
+            font-weight: bold;
+            color: #0056b3;
+        }
+        .ai {
+            font-weight: bold;
+            color: #d35400;
         }
         input[type="text"] {
             width: 80%;
@@ -93,20 +101,47 @@
             let messageInput = document.getElementById('messageInput');
             let messages = document.getElementById('messages');
             
-            // Create a new message element
+            let userMessage = messageInput.value;
+            
+            // Create a new message element for the user's message
             let newMessage = document.createElement('div');
-            newMessage.textContent = messageInput.value;
+            newMessage.textContent = `You: ${userMessage}`;
             newMessage.classList.add('message');
             
-            // Append the new message to the message container
+            // Append the user's message to the chat
             messages.appendChild(newMessage);
+            
+            // Clear the input field after sending the message
+            messageInput.value = ''; 
             
             // Scroll to the bottom of the chatbox
             messages.scrollTop = messages.scrollHeight;
-
-            // Clear the input field after sending the message
-            messageInput.value = ''; 
+            
+            // Send the user message to the Flask backend
+            fetch('/send_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: userMessage })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Get the bot's reply and append it to the chat
+                let botReply = data.reply;
+                let botMessage = document.createElement('div');
+                botMessage.textContent = `Bot: ${botReply}`;
+                botMessage.classList.add('message');
+                messages.appendChild(botMessage);
+                
+                // Scroll to the bottom of the chatbox again
+                messages.scrollTop = messages.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         }
     </script>
+    
 </body>
 </html>
