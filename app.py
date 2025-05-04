@@ -3,31 +3,42 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
-import requests
 from sqlalchemy.exc import IntegrityError
 
-app = Flask(__name__)
+# HuggingFace + Langchain
+from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from langchain_huggingface import HuggingFacePipeline
 
-# Set up the secret key and database
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')
+# Set up Flask
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', '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')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize database and login manager
+# Set up database and login
 db = SQLAlchemy(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
-# Create a user class to store user data
+# User model
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
 
-# Set up the user_loader function
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+# Load Hugging Face model and tokenizer
+sec_key = os.getenv("my-chatbot-api-key", "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")
+os.environ["my-chatbot-api-key"] = sec_key
+model_id = "gpt2"  
+
+model = AutoModelForCausalLM.from_pretrained(model_id)
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100)
+hf = HuggingFacePipeline(pipeline=pipe)
 
 @app.route('/')
 def home():
@@ -47,7 +58,6 @@ def login():
         else:
             flash('Login failed. Please check your credentials.', 'danger')
             return redirect(url_for('login'))
-
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -62,8 +72,8 @@ def signup():
             return redirect(url_for('signup'))
 
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        
         new_user = User(username=username, password=hashed_password)
+
         try:
             db.session.add(new_user)
             db.session.commit()
@@ -88,11 +98,10 @@ def update_profile():
         username = request.form['username']
         password = request.form['password']
         
-        # Update the user's data
         current_user.username = username
         if password:
             current_user.password = generate_password_hash(password, method='pbkdf2:sha256')
-
+        
         try:
             db.session.commit()
             flash('Profile updated successfully!', 'success')
@@ -101,7 +110,7 @@ def update_profile():
             db.session.rollback()
             flash('An error occurred while updating your profile. Please try again.', 'danger')
             return redirect(url_for('update_profile'))
-
+    
     return render_template('update_profile.html')
 
 @app.route('/logout')
@@ -120,25 +129,20 @@ def chatbox():
 @login_required
 def send_message():
     user_message = request.json.get('message')
+    print(f"User: {user_message}")
     
-    api_url = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
-    headers = {"Authorization": f"Bearer {os.getenv('HF_API_TOKEN')}"}
-    data = {"inputs": user_message}
-    
-    response = requests.post(api_url, headers=headers, json=data)
-    response_data = response.json()
-    
-    bot_reply = response_data.get('generated_text', 'Sorry, I could not understand that.')
-    
-    return jsonify({"reply": bot_reply})
+    try:
+        # Generate response using local model
+        bot_response = hf.invoke(user_message)
+        if isinstance(bot_response, list):
+            bot_reply = bot_response[0]['generated_text']
+        else:
+            bot_reply = str(bot_response)
+    except Exception as e:
+        print(f"Error: {e}")
+        bot_reply = "Oops! Something went wrong while generating a reply."
 
-@app.route('/test_token', methods=['GET'])
-def test_token():
-    api_token = os.getenv('HF_API_TOKEN')
-    if api_token:
-        return f"Token is set: {api_token}", 200
-    else:
-        return "Token not set.", 400
+    return jsonify({"reply": bot_reply})
 
 if __name__ == '__main__':
     with app.app_context():

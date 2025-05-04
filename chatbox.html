@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatbox</title>
+  <style>
+    :root {
+      --bg-color: #f4f7fc;
+      --text-color: #333;
+      --chat-bg: #ffffff;
+      --user-color: #0056b3;
+      --bot-color: #d35400;
+    }
+
+    body.dark {
+      --bg-color: #1e1e1e;
+      --text-color: #f0f0f0;
+      --chat-bg: #2e2e2e;
+    }
+
+    body {
+      font-family: 'Noto Sans Bengali', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      transition: background 0.3s;
+    }
+
+    header {
+      background-color: #0056b3;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      position: relative;
+    }
+
+    .top-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .chat-container {
+      max-width: 700px;
+      margin: 30px auto;
+      background-color: var(--chat-bg);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      padding: 20px;
+    }
+
+    #chatbox {
+      height: 300px;
+      overflow-y: scroll;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background-color: var(--chat-bg);
+      border-radius: 5px;
+      margin-bottom: 15px;
+      color: var(--text-color);
+      font-size: 1rem;
+    }
+
+    .message {
+      margin: 10px 0;
+      color: var(--text-color);
+    }
+
+    .user {
+      color: var(--user-color);
+      font-weight: bold;
+    }
+
+    .bot {
+      color: var(--bot-color);
+      font-weight: bold;
+    }
+
+    input[type="text"] {
+      width: 60%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background-color: #0056b3;
+      color: white;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #004494;
+    }
+
+    .input-area {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #0056b3;
+    }
+
+    .menu-container {
+      position: relative;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: -160px;
+      right: 0;
+      background-color: var(--chat-bg);
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      z-index: 1000;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      padding: 5px 0;
+      min-width: 160px;
+    }
+
+    .dropdown-menu button {
+      background: none;
+      border: none;
+      width: 100%;
+      text-align: left;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      color: var(--text-color);
+    }
+
+    .dropdown-menu button:hover {
+      background-color: #eee;
+    }
+
+    body.dark .dropdown-menu button:hover {
+      background-color: #444;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome to Chatbox</h1>
+    <div class="top-controls">
+      <button onclick="toggleTheme()">🌗 Theme</button>
+      <button onclick="increaseFont()">A+</button>
+      <button onclick="decreaseFont()">A-</button>
+      <button onclick="toggleHistory()">🕘</button>
+      <button onclick="togglePrivateMode()">🔒</button>
+      <button onclick="downloadChat()">⬇️</button>
+      <button onclick="screenshotChat()">📸</button>
+    </div>
+  </header>
+
+  <div class="chat-container">
+    <h2>Start chatting...</h2>
+    <div id="chatbox">
+      <div id="messages"></div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="messageInput" placeholder="Type a message..." />
+      <button onclick="sendMessage()">Send</button>
+      <button class="icon-btn" onclick="startListening()">🎤</button>
+      <button class="icon-btn" onclick="speakLastReply()">🔊</button>
+
+      <div class="menu-container">
+        <button class="icon-btn" onclick="toggleMenu()">⋮</button>
+        <div class="dropdown-menu" id="dropdownMenu">
+          <button onclick="translateToBengali()">Translate to Bengali</button>
+          <button onclick="toggleItalic()">Italic</button>
+          <button onclick="toggleBold()">Bold</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let botReply = '';
+    let isPrivate = false;
+    let speechSynthesisUtterance = null; // Variable to hold the current utterance
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+
+    function toggleMenu() {
+      const menu = document.getElementById('dropdownMenu');
+      menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const messages = document.getElementById('messages');
+      const userMessage = input.value;
+
+      if (!userMessage.trim()) return;
+
+      messages.innerHTML += `<div class="message"><span class="user">You:</span> ${userMessage}</div>`;
+      input.value = '';
+      messages.scrollTop = messages.scrollHeight;
+
+      fetch('/send_message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage })
+      })
+      .then(res => res.json())
+      .then(data => {
+        botReply = data.reply;
+        messages.innerHTML += `<div class="message"><span class="bot">${isPrivate ? '' : 'Bot:'}</span> ${botReply}</div>`;
+        messages.scrollTop = messages.scrollHeight;
+      })
+      .catch(err => console.error('Error:', err));
+    }
+
+    function startListening() {
+      const recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.onresult = function (event) {
+        document.getElementById('messageInput').value = event.results[0][0].transcript;
+      };
+      recognition.start();
+    }
+
+    function speakLastReply() {
+      if (!botReply || isPrivate) return;
+
+      // Check if the speech synthesis is already speaking
+      if (speechSynthesis.speaking) {
+        // If speaking, stop it
+        speechSynthesis.cancel();
+      } else {
+        // If not speaking, speak the bot's reply
+        speechSynthesisUtterance = new SpeechSynthesisUtterance(botReply);
+        speechSynthesisUtterance.lang = 'en-US';
+        speechSynthesis.speak(speechSynthesisUtterance);
+      }
+    }
+
+    function toggleItalic() {
+      if (!botReply) return;
+      document.getElementById('messages').innerHTML += `<div class="message"><span class="bot">${isPrivate ? '' : 'Bot:'}</span> <em>${botReply}</em></div>`;
+    }
+
+    function toggleBold() {
+      if (!botReply) return;
+      document.getElementById('messages').innerHTML += `<div class="message"><span class="bot">${isPrivate ? '' : 'Bot:'}</span> <strong>${botReply}</strong></div>`;
+    }
+
+    function translateToBengali() {
+      if (!botReply) return;
+      const translatedReply = "এইটি একটি উদাহরণ অনুবাদ।";
+      document.getElementById('messages').innerHTML += `<div class="message"><span class="bot">${isPrivate ? '' : 'Bot:'}</span> ${translatedReply}</div>`;
+    }
+
+    function increaseFont() {
+      const box = document.getElementById('chatbox');
+      const currentSize = parseFloat(getComputedStyle(box).fontSize);
+      box.style.fontSize = (currentSize + 1) + 'px';
+    }
+
+    function decreaseFont() {
+      const box = document.getElementById('chatbox');
+      const currentSize = parseFloat(getComputedStyle(box).fontSize);
+      if (currentSize > 10) {
+        box.style.fontSize = (currentSize - 1) + 'px';
+      }
+    }
+
+    function toggleHistory() {
+      const box = document.getElementById('chatbox');
+      box.style.display = (box.style.display === 'none') ? 'block' : 'none';
+    }
+
+    function downloadChat() {
+      const messages = document.getElementById('messages').innerText;
+      const blob = new Blob([messages], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'chat_history.txt';
+      a.click();
+    }
+
+    function togglePrivateMode() {
+      isPrivate = !isPrivate;
+      alert('Private mode: ' + (isPrivate ? 'ON' : 'OFF'));
+    }
+
+    function screenshotChat() {
+      html2canvas(document.getElementById('chatbox')).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'chat_screenshot.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
