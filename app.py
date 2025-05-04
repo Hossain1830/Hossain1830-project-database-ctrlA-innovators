@@ -11,7 +11,7 @@ from langchain_huggingface import HuggingFacePipeline
 
 # Set up Flask
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', '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')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'secret')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///users.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
