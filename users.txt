@@ -3,3 +3,5 @@ hossain,45678
 browse: http://127.0.0.1:8000/
 
 file location:  PS C:\Users\Asus\OneDrive\Desktop\web final project>
+
+Notion space about project: https://www.notion.so/Project-Update-Hugging-Face-AI-Open-Chat-1ab44215fde580ec80eac0c0fe29ec3b?pvs=4
